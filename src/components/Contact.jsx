@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import emailjs from '@emailjs/browser';
 import { personalInfo } from '../data/portfolioData';
 import confetti from 'canvas-confetti';
 import { 
@@ -10,14 +11,22 @@ import {
   Send, 
   Download, 
   Sparkles,
-  ArrowRight
+  ArrowRight,
+  AlertCircle
 } from 'lucide-react';
 import { LinkedInIcon, GitHubIcon, InstagramIcon, FacebookIcon } from './SocialIcons';
+
+const EMAILJS_SERVICE_ID = 'service_sk047fd';
+const EMAILJS_TEMPLATE_ID = 'template_gto0h7e';
+const EMAILJS_PUBLIC_KEY = 'i3-_-mVtPLw7SrcRJ';
 
 export default function Contact() {
   const [copied, setCopied] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [formData, setFormData] = useState({ name: '', email: '', message: '', roleType: 'Full-time' });
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [submittedEmail, setSubmittedEmail] = useState('');
+  const [formData, setFormData] = useState({ name: '', email: '', message: '', roleType: 'Full-time Role' });
 
   const handleCopyEmail = () => {
     navigator.clipboard.writeText(personalInfo.email);
@@ -25,19 +34,48 @@ export default function Contact() {
     setTimeout(() => setCopied(false), 2500);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.name || !formData.email || !formData.message) return;
 
-    // Trigger celebratory confetti
-    confetti({
-      particleCount: 100,
-      spread: 70,
-      origin: { y: 0.6 },
-      colors: ['#10b981', '#34d399', '#f59e0b', '#38bdf8']
-    });
+    setLoading(true);
+    setErrorMessage('');
 
-    setSubmitted(true);
+    try {
+      await emailjs.send(
+        EMAILJS_SERVICE_ID,
+        EMAILJS_TEMPLATE_ID,
+        {
+          name: formData.name,
+          email: formData.email,
+          message: formData.message,
+          title: formData.roleType,
+        },
+        EMAILJS_PUBLIC_KEY
+      );
+
+      // Save email for confirmation message before clearing form
+      setSubmittedEmail(formData.email);
+
+      // Trigger celebratory confetti
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ['#10b981', '#34d399', '#f59e0b', '#38bdf8']
+      });
+
+      // Clear the form fields after successful submission
+      setFormData({ name: '', email: '', message: '', roleType: 'Full-time Role' });
+      setSubmitted(true);
+    } catch (error) {
+      console.error('EmailJS Send Error:', error);
+      setErrorMessage(
+        'Failed to send message via EmailJS. Please verify your connection or reach out directly via email/WhatsApp.'
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -218,12 +256,14 @@ export default function Contact() {
                     Thank you for reaching out!
                   </h4>
                   <p className="text-xs text-slate-300 max-w-md mx-auto">
-                    Your message has been dispatched. Mohamed will get back to you within 24 hours at <span className="text-emerald-400 font-mono">{formData.email}</span>.
+                    Your message has been dispatched successfully via EmailJS. Mohamed will get back to you within 24 hours at{' '}
+                    <span className="text-emerald-400 font-mono font-medium">{submittedEmail || 'your email'}</span>.
                   </p>
                   <button
                     onClick={() => {
                       setSubmitted(false);
-                      setFormData({ name: '', email: '', message: '', roleType: 'Full-time' });
+                      setErrorMessage('');
+                      setSubmittedEmail('');
                     }}
                     className="px-4 py-2 rounded-full bg-slate-900 border border-slate-700 text-xs text-slate-300 hover:text-white transition-colors"
                   >
@@ -243,6 +283,7 @@ export default function Contact() {
                         <button
                           type="button"
                           key={type}
+                          disabled={loading}
                           onClick={() => setFormData({ ...formData, roleType: type })}
                           className={`px-3 py-1.5 rounded-full text-xs font-mono transition-all ${
                             formData.roleType === type
@@ -265,10 +306,11 @@ export default function Contact() {
                       id="contact-name"
                       type="text"
                       required
+                      disabled={loading}
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       placeholder="e.g. Sarah Jenkins (Tech Recruiter)"
-                      className="w-full px-4 py-3 rounded-xl bg-slate-950/80 border border-slate-800 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-sm text-white placeholder-slate-600 outline-none transition-colors"
+                      className="w-full px-4 py-3 rounded-xl bg-slate-950/80 border border-slate-800 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-sm text-white placeholder-slate-600 outline-none transition-colors disabled:opacity-50"
                     />
                   </div>
 
@@ -281,10 +323,11 @@ export default function Contact() {
                       id="contact-email"
                       type="email"
                       required
+                      disabled={loading}
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       placeholder="e.g. sarah@company.com"
-                      className="w-full px-4 py-3 rounded-xl bg-slate-950/80 border border-slate-800 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-sm text-white placeholder-slate-600 outline-none transition-colors"
+                      className="w-full px-4 py-3 rounded-xl bg-slate-950/80 border border-slate-800 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-sm text-white placeholder-slate-600 outline-none transition-colors disabled:opacity-50"
                     />
                   </div>
 
@@ -297,20 +340,39 @@ export default function Contact() {
                       id="contact-msg"
                       rows={4}
                       required
+                      disabled={loading}
                       value={formData.message}
                       onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                       placeholder="Describe the problem, dashboard needs, or opportunity..."
-                      className="w-full px-4 py-3 rounded-xl bg-slate-950/80 border border-slate-800 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-sm text-white placeholder-slate-600 outline-none transition-colors resize-none"
+                      className="w-full px-4 py-3 rounded-xl bg-slate-950/80 border border-slate-800 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-sm text-white placeholder-slate-600 outline-none transition-colors resize-none disabled:opacity-50"
                     ></textarea>
                   </div>
+
+                  {/* Error Notification */}
+                  {errorMessage && (
+                    <div className="flex items-center gap-2 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs">
+                      <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+                      <span>{errorMessage}</span>
+                    </div>
+                  )}
 
                   {/* Submit Button */}
                   <button
                     type="submit"
-                    className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm transition-all shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 hover:-translate-y-0.5 active:translate-y-0"
+                    disabled={loading}
+                    className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 disabled:opacity-60 disabled:cursor-not-allowed text-slate-950 font-bold text-sm transition-all shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 hover:-translate-y-0.5 active:translate-y-0"
                   >
-                    <span>Send Message</span>
-                    <Send className="w-4 h-4" />
+                    {loading ? (
+                      <>
+                        <span className="w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin"></span>
+                        <span>Sending Message...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Send Message</span>
+                        <Send className="w-4 h-4" />
+                      </>
+                    )}
                   </button>
 
                 </form>
