@@ -70,8 +70,11 @@ export default function Contact() {
       setSubmitted(true);
     } catch (error) {
       console.error('EmailJS Send Error:', error);
+      const detail = error?.text || error?.message || '';
       setErrorMessage(
-        'Failed to send message via EmailJS. Please verify your connection or reach out directly via email/WhatsApp.'
+        detail
+          ? `خطأ من EmailJS: ${detail}`
+          : 'تعذر إرسال الرسالة. يرجى التأكد من الاتصال أو التواصل مباشرة عبر البريد أو واتساب.'
       );
     } finally {
       setLoading(false);
