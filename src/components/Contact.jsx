@@ -17,7 +17,7 @@ import {
 import { LinkedInIcon, GitHubIcon, InstagramIcon, FacebookIcon } from './SocialIcons';
 
 const EMAILJS_SERVICE_ID = 'service_sk047fd';
-const EMAILJS_TEMPLATE_ID = 'template_gto0h7e';
+const EMAILJS_TEMPLATE_ID = 'template_shm68dm';
 const EMAILJS_PUBLIC_KEY = 'i3-_-mVtPLw7SrcRJ';
 
 export default function Contact() {
