@@ -76,9 +76,10 @@ export default function About() {
                 {/* Photo frame */}
                 <div className="relative w-full aspect-[4/5] rounded-2xl overflow-hidden bg-slate-950">
                   <img
-                    src={personalInfo.avatar}
+                    src={personalInfo.avatar || "./assets/mohamed_ragab_new.jpg"}
                     alt={personalInfo.name}
                     className="w-full h-full object-cover object-top filter brightness-95 contrast-105 group-hover:scale-105 transition-transform duration-500"
+                    loading="eager"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#0D121B] via-transparent to-transparent opacity-60"></div>
                   

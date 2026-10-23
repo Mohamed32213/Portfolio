@@ -7,7 +7,7 @@ export const personalInfo = {
   location: "Fayoum, Egypt",
   email: "momoragab09@gmail.com",
   phone: "+20 109 038 0693",
-  avatar: "./assets/mohamed_ragab.jpg",
+  avatar: "./assets/mohamed_ragab_new.jpg",
   resumeUrl: "./assets/Mohamed_Ragab_CV.pdf",
   socials: {
     linkedin: "https://www.linkedin.com/in/mohamed-ragab-6b4b84395",
